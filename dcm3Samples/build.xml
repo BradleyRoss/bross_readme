@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project default="jar" basedir=".">
+	<!-- 
+	  ** This code uses the slf4j logging library.
+	 -->
+	<path id="jar.classpath">
+	<fileset dir="/Users/bradleyross/Resources/libraries/exports">
+		<include name="sample.jar" />
+ 		<include name="tracing.jar" />
+	</fileset>
+	<fileset dir="/Users/bradleyross/Resources/libraries/dcm4che-3.0.1/lib">
+		<include name="*.jar" />
+	</fileset>
+	<fileset dir="/opt/local/share/java">
+		<include name="junit.jar" />
+		<include name="hamcrest-core.jar" />
+	</fileset>
+	</path>
+	<target name="compile">
+		<copy file="src/log4j.conf" toFile="bin" />
+		<javac srcdir="src" destdir="bin"
+			includeantruntime="false" debug="true" debugLevel="lines,vars,source">
+			<classpath refid="jar.classpath" />
+			</javac>
+		</target>
+	<target name="jar" depends="compile">
+		<jar destfile="jar/bross_readme.jar" basedir="bin" />
+		</target>
+	</project>

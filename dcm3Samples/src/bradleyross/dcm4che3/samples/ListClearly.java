@@ -112,6 +112,7 @@ public class ListClearly implements ActionListener {
 				dictionary.tagForKeyword("Units");
 		public int RescaleSlope = dictionary.tagForKeyword("RescaleSlope");
 		public int RescaleIntercept = dictionary.tagForKeyword("RescaleIntercept");
+		public int PatientName = dictionary.tagForKeyword("PatientName");
 		
 	}
 	protected Tag tag = new Tag();
@@ -341,6 +342,7 @@ public class ListClearly implements ActionListener {
 			log("Display of group 0x0009 - GE only");
 			processObject(dicomObject, new GroupSelector(0x0009));
 			log("Display of individual tags");
+			showValue(dicomObject, tag.PatientName);
 			showValue(dicomObject, tag.Manufacturer);
 			showValue(dicomObject, tag.RescaleIntercept);
 			showValue(dicomObject, tag.RescaleSlope);
@@ -422,7 +424,7 @@ public class ListClearly implements ActionListener {
 		if (!dicomObject.containsValue(tag)) {
 			log(TagUtils.toString(tag) + " " + name + " not found");
 		} else if (vr == VR.LT || vr == VR.UI || vr == VR.ST ||
-				vr == VR.LO || vr == VR.SH || vr == VR.UT || vr == VR.CS) {
+				vr == VR.LO || vr == VR.SH || vr == VR.UT || vr == VR.CS || vr == VR.PN) {
 			String value = dicomObject.getString(tag);
 			StringBuilder sb = new StringBuilder();
 			sb.append(TagUtils.toString(tag) + " " + name + " " + vr.toString() + " :: ");

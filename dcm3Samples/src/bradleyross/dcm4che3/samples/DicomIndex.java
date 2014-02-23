@@ -2,9 +2,11 @@ package bradleyross.dcm4che3.samples;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Collection;
+import java.util.ArrayList;
 import org.dcm4che.data.Attributes;
 import org.dcm4che.data.ElementDictionary;
 import org.dcm4che.io.DicomInputStream;
@@ -28,15 +30,30 @@ public class DicomIndex {
 		public int SOPInstanceUID = dictionary.tagForKeyword("SOPInstanceUID");
 		public int FrameOfReferenceUID = dictionary.tagForKeyword("FrameOfReferenceUID");
 		public int SOPClassUID = dictionary.tagForKeyword("SOPClassUID");
+		public int SliceLocation = dictionary.tagForKeyword("SliceLocation");
+		public int AcquisitionTime = dictionary.tagForKeyword("AcquisitionTime");
+		public int AcquisitionDate = dictionary.tagForKeyword("AcquisitionDate");
+		public int AcquisitionDateTime = dictionary.tagForKeyword("AcquisitiionDateTime");
+		public int AcquisitionNumber = dictionary.tagForKeyword("AcquisitionNumber");
+		public int SeriesDate = dictionary.tagForKeyword("SeriesDate");
+		public int SeriesTime = dictionary.tagForKeyword("SeriesTime");
+		public int SeriesDescription = dictionary.tagForKeyword("SeriesDescription");
+		public int StudyDescription = dictionary.tagForKeyword("StudyDescription");
+		public int PatientName = dictionary.tagForKeyword("PatientName");
 	}
 	protected Tags Tag;
+	/**
+	 * Contains information about a Dicom study.
+	 * @author Bradley Ross
+	 *
+	 */
 	protected class Study {
 		protected String studyUID;
+		protected String patientName;
 		protected HashSet<String> seriesList;
 		public Study(Instance instance) {
 			seriesList = new HashSet<String>();
 			studyUID = instance.getStudyInstanceUID();
-			seriesList = new HashSet<String>();
 		}
 		public void add(Instance instance) {
 			if (instance.getSeriesInstanceUID() == null) { return; }
@@ -50,7 +67,18 @@ public class DicomIndex {
 		public Collection<String> values() {
 			return seriesList;
 		}
+		public String getPatientName() {
+			return patientName;
+		}
+		protected void setPatientName(String value) {
+			patientName = value;
+		}
 	}
+	/**
+	 * Contains information about a Dicom series.
+	 * @author Bradley Ross
+	 *
+	 */
 	protected class Series {
 		protected String studyUID;
 		protected String seriesUID;
@@ -78,7 +106,13 @@ public class DicomIndex {
 		public String getSeriesInstanceUID() {
 			return seriesUID;
 		}
+
 	}
+	/** 
+	 * Contains information about a singe Dicom object.
+	 * @author Bradley Ross
+	 *
+	 */
 	protected class Instance {
 		protected String studyUID;
 		protected String seriesUID;
@@ -86,6 +120,14 @@ public class DicomIndex {
 		protected String forUID;
 		protected String classUID;
 		protected File file;
+		protected float sliceLocation;
+		protected int acquisitionNumber;
+		protected Date acquisitionTime;
+		protected Date acquisitionDate;
+		protected Date acquisitionDateTime;
+		protected String patientName;
+		protected String studyDescription;
+		protected String seriesDescription;
 		public Instance(Attributes object, File file) {
 			if (object == null) {
 				throw new NullPointerException("Value for Attributes object is null");
@@ -109,6 +151,36 @@ public class DicomIndex {
 			initialize(object, file);
 		}
 		protected void initialize(Attributes object, File file) {
+			if (object.containsValue(Tag.SliceLocation)) {
+				sliceLocation = object.getFloat(Tag.SliceLocation, -1.0f);
+			} else {
+				sliceLocation = -1.0f;
+			}
+			if (object.containsValue(Tag.AcquisitionNumber)) {
+				acquisitionNumber = object.getInt(Tag.AcquisitionNumber, -1);
+			} else {
+				acquisitionNumber = -1;
+			}
+			if (object.containsValue(Tag.AcquisitionTime)) {
+				acquisitionTime = object.getDate(Tag.AcquisitionTime);
+			} else {
+				acquisitionTime = null;
+			}
+			if (object.containsValue(Tag.AcquisitionDate)) {
+				acquisitionDate = object.getDate(Tag.AcquisitionDate);
+			} else {
+				acquisitionDate = null;
+			}
+			if (object.containsValue(Tag.AcquisitionDateTime)) {
+				acquisitionDateTime = object.getDate(Tag.AcquisitionDateTime);
+			} else {
+				acquisitionDateTime = null;
+			}
+			if (object.containsValue(Tag.SOPClassUID)) {
+				classUID = object.getString(Tag.SOPClassUID);
+			} else {
+				classUID = null;
+			}
 			if (object.containsValue(Tag.StudyInstanceUID)) {
 				studyUID = object.getString(Tag.StudyInstanceUID);
 			} else {
@@ -129,14 +201,31 @@ public class DicomIndex {
 			} else {
 				forUID = null;
 			}
+			if (object.containsValue(Tag.PatientName)) {
+				patientName = object.getString(Tag.PatientName);
+			} else {
+				patientName = null;
+			}
+			if (object.containsValue(Tag.StudyDescription)) {
+				studyDescription = object.getString(Tag.StudyDescription);
+			} else {
+				studyDescription = null;
+			}
+			if (object.containsValue(Tag.SeriesDescription)) {
+				seriesDescription = object.getString(Tag.SeriesDescription);
+			} else {
+				seriesDescription = null;
+			}
 			this.file = file;
 			if (studyUID != null && seriesUID != null && instanceUID != null) {
 				if (!studyMap.containsKey(studyUID)) {
-					studyMap.put(studyUID, new Study(this));
+					Study working = new Study(this);
+					studyMap.put(studyUID, working);
 				}
 				studyMap.get(studyUID).add(this);
 				if (!seriesMap.containsKey(seriesUID)) {
-					seriesMap.put(seriesUID, new Series(this));
+					Series working = new Series(this);
+					seriesMap.put(seriesUID, working);
 				}
 				seriesMap.get(seriesUID).add(this);
 				if (!instanceMap.containsKey(instanceUID)) {
@@ -159,10 +248,91 @@ public class DicomIndex {
 		public String getFrameOfReferenceUID() {
 			return forUID;
 		}
+		public File getFile() {
+			return file;
+		}
+		public float getSliceLocation() {
+			return sliceLocation;
+		}
+		public Date getAcquisitionTime() {
+			return acquisitionTime;
+		}
+		public int getAcquisitionNumber() {
+			return acquisitionNumber;
+		}
+		public String getStudyDescription() {
+			return studyDescription;
+		}
+		public String getSeriesDescription() {
+			return seriesDescription;
+		}
+		public String getPatientName() {
+			return patientName;
+		}
 	}
+	/**
+	 * Contains {@link Study} objects indexed by
+	 * StudyInstanceUID.
+	 */
 	protected HashMap<String,Study> studyMap;
+	/**
+	 * Contains {@link Series} objects indexed by
+	 * SeriesInstanceUID.
+	 */
 	protected HashMap<String,Series> seriesMap;
+	/**
+	 * Contains {@link Instance} objects indexed
+	 * by SOPInstanceUID.
+	 */
 	protected HashMap<String,Instance> instanceMap;
+	/**
+	 * Return a list of studies.
+	 * @return list of studies
+	 */
+	public Collection<Study> studyIterator() {
+		return studyMap.values();
+		
+	}
+	/**
+	 * Return a list of series.
+	 * @return list of series
+	 */
+	public Collection<Series> seriesIterator() {
+		return seriesMap.values();
+	}
+	/**
+	 * Return a list of series belonging to a study.
+	 * @param studyUID study instance UID
+	 * @return list of series
+	 */
+	public Collection<Series> seriesIterator(String studyUID) {
+		Study study = studyMap.get(studyUID);
+		Collection<Series> working = new ArrayList<Series>();
+		for (String item : study.values()) {
+			working.add(seriesMap.get(item));
+		}
+		return working;
+	}
+	/**
+	 * Return a list of SOP instances.
+	 * @return list of instances
+	 */
+	public Collection<Instance> instanceIterator() {
+		return instanceMap.values();
+	}
+	/**
+	 * Return a list of SOP instances belonging to a series.
+	 * @param seriesUID series instance UID
+	 * @return list of instances
+	 */
+	public Collection<Instance> instanceIterator(String seriesUID) {
+		Series series = seriesMap.get(seriesUID);
+		Collection<Instance> working = new ArrayList<Instance>();
+		for (String item : series.values()) {
+			working.add(instanceMap.get(item));
+		}
+		return working;
+	}
 	public DicomIndex() {
 		Tag = new Tags();
 		studyMap = new HashMap<String,Study>();
@@ -188,14 +358,6 @@ public class DicomIndex {
 				System.out.println("There are " + Integer.toString(instances.size()) + " objects");
 			}
 		}
-	}
-	/**
-	 * Test driver
-	 * @param args
-	 */
-	public static void main(String[] args) {
-		
-
 	}
 
 }

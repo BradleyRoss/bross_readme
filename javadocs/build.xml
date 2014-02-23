@@ -2,7 +2,7 @@
 <project default="javadoc" basedir=".">
 	<property name="gitDir" location="/Users/bradleyross/newGit/dcm4che/" />
 	<property name="gitDir2" location="/Users/bradleyross/newGit/bross_readme/" />
-	<property name="docDir" location="/Users/bradleyross/Documents/dcm4che3/documents/doc" />
+	<property name="docDir" location="/Users/bradleyross/newGit/documentation/documentation/javadocs" />
 	<path id="src.classpath">
 		<pathelement path="${gitDir}/dcm4che-audit/src/main/java" />
 		<pathelement path="${gitDir}/dcm4che-conf/dcm4che-conf-api/src/main/java" />
@@ -113,7 +113,7 @@
 			author="true" linksource="true"
 			nodeprecated="false" nodeprecatedlist="false"
 			noindex="false" nonavbar="false" notree="false"
-			verbose="false"  splitindex="false" use="true"
+			verbose="false"  splitindex="true" use="true"
 			version="true" overview="overview.html" >
 		<classpath refid="jar.classpath" />
 		<sourcepath refid="src.classpath" />
@@ -123,6 +123,10 @@
 			href="http://download.oracle.com/javaee/6/api/" />
 		<link offline="false" resolveLink="false"
 			href="http://poi.apache.org/apidocs/" />
+		<link offline="false" resolveLink="false"
+			href="http://logging.apache.org/log4j/1.2/apidocs/" />
+		<link offline="false" resolveLink="false"
+			href="http://www.slf4j.org/apidocs/" />
 		</javadoc>
 	</target>
 </project>

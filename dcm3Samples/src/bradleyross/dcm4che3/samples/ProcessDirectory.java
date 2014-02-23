@@ -22,6 +22,9 @@ import java.io.IOException;
  *
  */
 public class ProcessDirectory {
+	/**
+	 * Object containing information on Dicom objects.
+	 */
 	protected DicomIndex index = new DicomIndex();
 	/**
 	 * Main window of user interface.
